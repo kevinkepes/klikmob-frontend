@@ -50,9 +50,6 @@
         <button class="sidebar-btn" data-view="adauga">
           <span>➕</span> Adaugă lucrare
         </button>
-        <button class="sidebar-btn" data-view="setari">
-          <span>⚙️</span> Setări
-        </button>
       </nav>
       <div class="sidebar-footer">
         <a href="index.html" class="sidebar-btn">
@@ -101,8 +98,6 @@
       <div class="admin-view" id="view-adauga">
         <div class="upload-card">
           <h2>Adaugă lucrare nouă</h2>
-
-          <!-- DROP ZONE -->
           <div class="drop-zone" id="dropZone">
             <div class="drop-inner" id="dropInner">
               <div class="drop-icon">📸</div>
@@ -116,8 +111,6 @@
             </div>
             <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
           </div>
-
-          <!-- FORM -->
           <div class="upload-form">
             <div class="form-row">
               <div class="form-group">
@@ -148,48 +141,6 @@
           </div>
           <div class="save-success" id="saveSuccess">✅ Lucrarea a fost adăugată cu succes pe site!</div>
           <div class="save-error" id="saveError"></div>
-        </div>
-      </div>
-
-      <!-- VIEW: SETĂRI -->
-      <div class="admin-view" id="view-setari">
-        <div class="settings-card">
-          <h2>Setări panou</h2>
-
-          <div class="setting-section">
-            <h3>🔒 Schimbă parola de admin</h3>
-            <div class="form-group">
-              <label>Parola curentă</label>
-              <input type="password" id="oldPass" placeholder="Parola actuală">
-            </div>
-            <div class="form-group">
-              <label>Parola nouă</label>
-              <input type="password" id="newPass" placeholder="Parola nouă (min. 4 caractere)">
-            </div>
-            <div class="form-group">
-              <label>Confirmă parola nouă</label>
-              <input type="password" id="confirmPass" placeholder="Repetă parola nouă">
-            </div>
-            <button class="btn btn-primary" id="changePassBtn">Salvează parola</button>
-            <div class="setting-msg" id="passMsg"></div>
-          </div>
-
-          <div class="setting-section">
-            <h3>🗑 Gestionare date</h3>
-            <p style="color:#888; margin-bottom:1rem;">Resetează toate lucrările din galerie la datele de demonstrație.
-            </p>
-            <button class="btn btn-danger" id="resetDataBtn">Resetează galeria</button>
-            <div class="setting-msg" id="resetMsg"></div>
-          </div>
-
-          <div class="setting-section info-section">
-            <h3>ℹ️ Informații site</h3>
-            <div class="info-grid">
-              <div><strong>Telefon comenzi</strong><span>0742 121 735</span></div>
-              <div><strong>Email</strong><span>klikmob@yahoo.com</span></div>
-              <div><strong>Adresă</strong><span>Str. Depozitelor 62, Satu Mare</span></div>
-            </div>
-          </div>
         </div>
       </div>
 

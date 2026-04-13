@@ -1177,15 +1177,7 @@ a.contact-item:hover {
 }
 
 
-/* Watermark in lightbox */
-#lightbox {
-  position: relative;
-}
 
-#lightboxImg {
-  position: relative;
-  display: block;
-}
 
 
 /* ---- LIGHTBOX WATERMARK ---- */
