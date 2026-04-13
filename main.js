@@ -44,9 +44,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- GALLERY ---
   let currentCat = 'toate';
+  let allItems = [];
   let lightboxItems = [];
   let lightboxIndex = 0;
   let lightboxImageIndex = 0;
+  let currentPage = 1;
+  const ITEMS_PER_PAGE = 6;
 
   function getCatEmoji(cat) {
     const map = { bucatarie: '🍳', dormitor: '🛏', baie: '🚿', living: '🛋', birou: '💼', exterior: '🌿' };
@@ -57,18 +60,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     return map[cat] || cat;
   }
 
-  async function renderGallery(cat) {
+  function renderPage() {
     const grid = document.getElementById('gallery-grid');
     const empty = document.getElementById('gallery-empty');
     grid.querySelectorAll('.gallery-item').forEach(el => el.remove());
+
+    // Sterge paginatia veche
+    const oldPag = document.getElementById('gallery-pagination');
+    if (oldPag) oldPag.remove();
+
+    if (!allItems || allItems.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
     empty.style.display = 'none';
 
-    const items = await window.KlikAPI.fetchItems(cat === 'toate' ? null : cat);
-    lightboxItems = items || [];
+    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pageItems = allItems.slice(start, start + ITEMS_PER_PAGE);
 
-    if (!items || items.length === 0) { empty.style.display = 'block'; return; }
+    // lightboxItems = toate itemele pentru navigare in lightbox
+    lightboxItems = allItems;
 
-    items.forEach((item, idx) => {
+    pageItems.forEach((item) => {
+      const idx = allItems.indexOf(item);
       const div = document.createElement('div');
       div.className = 'gallery-item';
       div.dataset.idx = idx;
@@ -100,6 +115,41 @@ document.addEventListener('DOMContentLoaded', async () => {
       div.addEventListener('click', () => openLightbox(idx, 0));
       grid.insertBefore(div, empty);
     });
+
+    // Paginatie - doar daca e mai mult de o pagina
+    if (totalPages > 1) {
+      const pag = document.createElement('div');
+      pag.id = 'gallery-pagination';
+      pag.className = 'gallery-pagination';
+      pag.innerHTML = `
+        <button class="pag-btn" id="pagPrev" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
+        <span class="pag-info">${currentPage} / ${totalPages}</span>
+        <button class="pag-btn" id="pagNext" ${currentPage === totalPages ? 'disabled' : ''}>›</button>
+      `;
+      grid.parentNode.insertBefore(pag, grid.nextSibling);
+
+      document.getElementById('pagPrev').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPage();
+          document.getElementById('galerie').scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+      document.getElementById('pagNext').addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPage();
+          document.getElementById('galerie').scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }
+  }
+
+  async function renderGallery(cat) {
+    const items = await window.KlikAPI.fetchItems(cat === 'toate' ? null : cat);
+    allItems = items || [];
+    currentPage = 1;
+    renderPage();
   }
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -164,7 +214,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openLightbox(itemIdx, imgIdx) {
     lightboxIndex = itemIdx;
     lightboxImageIndex = imgIdx || 0;
-    // Resetam orice stil pe body inainte sa deschidem
     document.body.style.top = '';
     document.body.classList.remove('menu-open');
     navLinks.classList.remove('open');

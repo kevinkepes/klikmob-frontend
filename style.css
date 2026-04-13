@@ -950,9 +950,9 @@ a.contact-item:hover {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 10000 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 999;
     background: var(--dark);
     flex-direction: column;
     justify-content: center;
@@ -965,15 +965,12 @@ a.contact-item:hover {
   }
 
   .nav-links.open {
-    transform: translateX(0) !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 10000 !important;
+    transform: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 
   .nav-links a {
@@ -1226,4 +1223,53 @@ a.contact-item:hover {
 /* ---- MENU OPEN - fara position fixed ---- */
 body.menu-open {
   overflow: hidden;
+}
+
+/* ---- PAGINATIE GALERIE ---- */
+.gallery-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  padding: 0.5rem;
+}
+
+.pag-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: transparent;
+  color: var(--gold);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  font-family: var(--font-body);
+  line-height: 1;
+}
+
+.pag-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.pag-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  border-color: var(--grey);
+  color: var(--grey);
+}
+
+.pag-info {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  min-width: 60px;
+  text-align: center;
 }
