@@ -14,19 +14,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('nav-links');
   const menuClose = document.getElementById('menuClose');
+  let menuScrollY = 0;
 
   function openMenu() {
+    menuScrollY = window.scrollY;
     navLinks.classList.add('open');
     document.body.classList.add('menu-open');
+    document.body.style.top = `-${menuScrollY}px`;
   }
   function closeMenu() {
     navLinks.classList.remove('open');
     document.body.classList.remove('menu-open');
+    document.body.style.top = '';
+    window.scrollTo(0, menuScrollY);
   }
 
   hamburger.addEventListener('click', openMenu);
   menuClose?.addEventListener('click', closeMenu);
   navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+  navLinks.addEventListener('touchmove', e => {
+    if (navLinks.classList.contains('open')) e.preventDefault();
+  }, { passive: false });
 
   // --- FIX URL ---
   document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -116,12 +124,63 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lightboxCaption = document.getElementById('lightboxCaption');
   const lightboxDots = document.getElementById('lightboxDots');
 
+  function updateWatermark() {
+    // Calculam pozitia imaginii in viewport direct
+    // lightbox e position:fixed inset:0 deci rect e relativ la viewport
+    const imgW = lightboxImg.naturalWidth;
+    const imgH = lightboxImg.naturalHeight;
+    if (!imgW || !imgH) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Calculam dimensiunile reale ale imaginii in lightbox (max 90vw, 85vh)
+    const maxW = vw * 0.9;
+    const maxH = vh * 0.85;
+    const ratio = imgW / imgH;
+
+    let rendW, rendH;
+    if (ratio > maxW / maxH) {
+      rendW = maxW;
+      rendH = maxW / ratio;
+    } else {
+      rendH = maxH;
+      rendW = maxH * ratio;
+    }
+
+    // Imaginea e centrata in lightbox
+    const imgLeft = (vw - rendW) / 2;
+    const imgTop = (vh - rendH) / 2;
+
+    const size = Math.min(rendW, rendH) * 0.15;
+    const wmLeft = imgLeft + rendW - size - 12;
+    const wmTop = imgTop + rendH - size - 12;
+
+    let wm = document.querySelector('.lightbox-watermark');
+    if (!wm) {
+      wm = document.createElement('div');
+      wm.className = 'lightbox-watermark';
+      lightbox.appendChild(wm);
+    }
+    wm.style.cssText = `
+      position: absolute;
+      width: ${size}px;
+      height: ${size}px;
+      left: ${wmLeft}px;
+      top: ${wmTop}px;
+      background: url('logo.png') center/contain no-repeat;
+      opacity: 0.22;
+      pointer-events: none;
+      filter: brightness(0) invert(1);
+      z-index: 10001;
+    `;
+  }
+
   function openLightbox(itemIdx, imgIdx) {
     lightboxIndex = itemIdx;
     lightboxImageIndex = imgIdx || 0;
     showLightboxImage();
     lightbox.classList.add('open');
-    // Nu blocam body cu position:fixed - interfereaza cu lightbox
     document.documentElement.style.overflow = 'hidden';
   }
 
@@ -133,20 +192,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const img = item.images[lightboxImageIndex];
       lightboxImg.src = img.imageUrl;
       lightboxImg.style.display = 'block';
-      lightboxImg.onload = () => {
-        const rect = lightboxImg.getBoundingClientRect();
-        let wm = document.querySelector('.lightbox-watermark');
-        if (!wm) {
-          wm = document.createElement('div');
-          wm.className = 'lightbox-watermark';
-          document.body.appendChild(wm);
-        }
-        const size = Math.min(rect.width, rect.height) * 0.15;
-        wm.style.width = size + 'px';
-        wm.style.height = size + 'px';
-        wm.style.left = (rect.right - size - 12) + 'px';
-        wm.style.top = (rect.bottom - size - 12) + 'px';
-      };
+      lightboxImg.onload = updateWatermark;
+      // Fallback pentru imagini din cache
+      if (lightboxImg.complete && lightboxImg.naturalWidth > 0) {
+        setTimeout(updateWatermark, 30);
+      }
       if (lightboxDots) {
         lightboxDots.innerHTML = item.images.length > 1
           ? item.images.map((_, i) =>
@@ -172,6 +222,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const wm = document.querySelector('.lightbox-watermark');
     if (wm) wm.remove();
   }
+
+  window.addEventListener('resize', () => {
+    if (lightbox.classList.contains('open')) updateWatermark();
+  });
 
   document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
