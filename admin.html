@@ -2,7 +2,14 @@
 <html lang="ro">
 
 <head>
+  <script>
+    if (location.pathname.endsWith('.html'))
+      history.replaceState(null, '', location.pathname.replace('.html', ''));
+  </script>
+  <script>if (location.pathname.endsWith('index.html')) history.replaceState(null, '', '/');</script>
+
   <meta charset="UTF-8">
+  <script>if (location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.replace('.html', ''));</script>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="logo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
