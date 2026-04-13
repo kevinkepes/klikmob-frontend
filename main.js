@@ -1,5 +1,5 @@
 // =============================================
-// KLIK Mob — JavaScript Principal v5
+// KLIK Mob — JavaScript Principal v6
 // =============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -14,19 +14,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('nav-links');
   const menuClose = document.getElementById('menuClose');
-  let menuScrollY = 0;
 
   function openMenu() {
-    menuScrollY = window.scrollY;
     navLinks.classList.add('open');
     document.body.classList.add('menu-open');
-    document.body.style.top = `-${menuScrollY}px`;
   }
   function closeMenu() {
     navLinks.classList.remove('open');
     document.body.classList.remove('menu-open');
-    document.body.style.top = '';
-    window.scrollTo(0, menuScrollY);
   }
 
   hamburger.addEventListener('click', openMenu);
@@ -125,63 +120,57 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lightboxDots = document.getElementById('lightboxDots');
 
   function updateWatermark() {
-    // Calculam pozitia imaginii in viewport direct
-    // lightbox e position:fixed inset:0 deci rect e relativ la viewport
     const imgW = lightboxImg.naturalWidth;
     const imgH = lightboxImg.naturalHeight;
     if (!imgW || !imgH) return;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-
-    // Calculam dimensiunile reale ale imaginii in lightbox (max 90vw, 85vh)
     const maxW = vw * 0.9;
     const maxH = vh * 0.85;
     const ratio = imgW / imgH;
 
     let rendW, rendH;
     if (ratio > maxW / maxH) {
-      rendW = maxW;
-      rendH = maxW / ratio;
+      rendW = maxW; rendH = maxW / ratio;
     } else {
-      rendH = maxH;
-      rendW = maxH * ratio;
+      rendH = maxH; rendW = maxH * ratio;
     }
 
-    // Imaginea e centrata in lightbox
     const imgLeft = (vw - rendW) / 2;
     const imgTop = (vh - rendH) / 2;
-
     const size = Math.min(rendW, rendH) * 0.15;
-    const wmLeft = imgLeft + rendW - size - 12;
-    const wmTop = imgTop + rendH - size - 12;
 
-    let wm = document.querySelector('.lightbox-watermark');
+    let wm = lightbox.querySelector('.lightbox-watermark');
     if (!wm) {
       wm = document.createElement('div');
       wm.className = 'lightbox-watermark';
       lightbox.appendChild(wm);
     }
     wm.style.cssText = `
-      position: absolute;
-      width: ${size}px;
-      height: ${size}px;
-      left: ${wmLeft}px;
-      top: ${wmTop}px;
-      background: url('logo.png') center/contain no-repeat;
-      opacity: 0.22;
-      pointer-events: none;
-      filter: brightness(0) invert(1);
-      z-index: 10001;
+      position:fixed;
+      width:${size}px;
+      height:${size}px;
+      left:${imgLeft + rendW - size - 12}px;
+      top:${imgTop + rendH - size - 12}px;
+      background:url('logo.png') center/contain no-repeat;
+      opacity:0.22;
+      pointer-events:none;
+      filter:brightness(0) invert(1);
+      z-index:10001;
     `;
   }
 
   function openLightbox(itemIdx, imgIdx) {
     lightboxIndex = itemIdx;
     lightboxImageIndex = imgIdx || 0;
-    showLightboxImage();
+    // Resetam orice stil pe body inainte sa deschidem
+    document.body.style.top = '';
+    document.body.classList.remove('menu-open');
+    navLinks.classList.remove('open');
     lightbox.classList.add('open');
-    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    showLightboxImage();
   }
 
   function showLightboxImage() {
@@ -193,7 +182,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       lightboxImg.src = img.imageUrl;
       lightboxImg.style.display = 'block';
       lightboxImg.onload = updateWatermark;
-      // Fallback pentru imagini din cache
       if (lightboxImg.complete && lightboxImg.naturalWidth > 0) {
         setTimeout(updateWatermark, 30);
       }
@@ -218,8 +206,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function closeLightbox() {
     lightbox.classList.remove('open');
-    document.documentElement.style.overflow = '';
-    const wm = document.querySelector('.lightbox-watermark');
+    document.body.style.overflow = '';
+    const wm = lightbox.querySelector('.lightbox-watermark');
     if (wm) wm.remove();
   }
 
