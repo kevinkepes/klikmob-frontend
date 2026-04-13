@@ -1196,3 +1196,20 @@ body.menu-open {
     overflow: hidden;
   }
 }
+
+/* Watermark in lightbox */
+#lightbox::after {
+  content: '';
+  position: absolute;
+  bottom: 60px;
+  right: calc(50% - 45vw);
+  width: 8vw;
+  max-width: 120px;
+  min-width: 60px;
+  aspect-ratio: 1;
+  background: url('logo.png') center/contain no-repeat;
+  opacity: 0.2;
+  pointer-events: none;
+  filter: brightness(0) invert(1);
+  z-index: 10000;
+}
