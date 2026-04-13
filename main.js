@@ -121,13 +121,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     lightboxImageIndex = imgIdx || 0;
     showLightboxImage();
     lightbox.classList.add('open');
-    // Watermark in lightbox
-    let wm = document.querySelector('.lightbox-watermark');
-    if (!wm) {
-      wm = document.createElement('div');
-      wm.className = 'lightbox-watermark';
-      lightbox.appendChild(wm);
-    }
     document.body.style.overflow = 'hidden';
   }
 
@@ -139,6 +132,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       const img = item.images[lightboxImageIndex];
       lightboxImg.src = img.imageUrl;
       lightboxImg.style.display = 'block';
+      lightboxImg.onload = () => {
+        const rect = lightboxImg.getBoundingClientRect();
+        let wm = document.querySelector('.lightbox-watermark');
+        if (!wm) {
+          wm = document.createElement('div');
+          wm.className = 'lightbox-watermark';
+          document.body.appendChild(wm);
+        }
+        const size = Math.min(rect.width, rect.height) * 0.15;
+        wm.style.width = size + 'px';
+        wm.style.height = size + 'px';
+        wm.style.left = (rect.right - size - 12) + 'px';
+        wm.style.top = (rect.bottom - size - 12) + 'px';
+      };
       if (lightboxDots) {
         lightboxDots.innerHTML = item.images.length > 1
           ? item.images.map((_, i) =>
@@ -161,6 +168,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
+    const wm = document.querySelector('.lightbox-watermark');
+    if (wm) wm.remove();
   }
 
   document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
