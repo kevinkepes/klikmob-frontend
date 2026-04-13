@@ -14,19 +14,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('nav-links');
   const menuClose = document.getElementById('menuClose');
+  let scrollY = 0;
 
   function openMenu() {
+    scrollY = window.scrollY;
     navLinks.classList.add('open');
     document.body.classList.add('menu-open');
+    document.body.style.top = `-${scrollY}px`;
   }
+
   function closeMenu() {
     navLinks.classList.remove('open');
     document.body.classList.remove('menu-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollY);
   }
 
   hamburger.addEventListener('click', openMenu);
   menuClose?.addEventListener('click', closeMenu);
   navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+  // Previne scroll pe touch in interiorul meniului
+  navLinks.addEventListener('touchmove', e => {
+    if (navLinks.classList.contains('open')) e.preventDefault();
+  }, { passive: false });
 
   // --- FIX URL ---
   document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -116,6 +127,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lightboxCaption = document.getElementById('lightboxCaption');
   const lightboxDots = document.getElementById('lightboxDots');
 
+  function positionWatermark() {
+    const rect = lightboxImg.getBoundingClientRect();
+    if (rect.width === 0) return;
+    let wm = document.querySelector('.lightbox-watermark');
+    if (!wm) {
+      wm = document.createElement('div');
+      wm.className = 'lightbox-watermark';
+      document.body.appendChild(wm);
+    }
+    const size = Math.min(rect.width, rect.height) * 0.15;
+    wm.style.cssText = `
+      position: fixed;
+      width: ${size}px;
+      height: ${size}px;
+      left: ${rect.right - size - 12}px;
+      top: ${rect.bottom - size - 12}px;
+      background: url('logo.png') center/contain no-repeat;
+      opacity: 0.22;
+      pointer-events: none;
+      filter: brightness(0) invert(1);
+      z-index: 10001;
+    `;
+  }
+
   function openLightbox(itemIdx, imgIdx) {
     lightboxIndex = itemIdx;
     lightboxImageIndex = imgIdx || 0;
@@ -130,22 +165,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const hasImages = item.images && item.images.length > 0;
     if (hasImages) {
       const img = item.images[lightboxImageIndex];
-      lightboxImg.src = img.imageUrl;
+      // Fix: sterge src mai intai ca sa forteze onload si pe imagini din cache
+      lightboxImg.src = '';
       lightboxImg.style.display = 'block';
-      lightboxImg.onload = () => {
-        const rect = lightboxImg.getBoundingClientRect();
-        let wm = document.querySelector('.lightbox-watermark');
-        if (!wm) {
-          wm = document.createElement('div');
-          wm.className = 'lightbox-watermark';
-          document.body.appendChild(wm);
-        }
-        const size = Math.min(rect.width, rect.height) * 0.15;
-        wm.style.width = size + 'px';
-        wm.style.height = size + 'px';
-        wm.style.left = (rect.right - size - 12) + 'px';
-        wm.style.top = (rect.bottom - size - 12) + 'px';
-      };
+      lightboxImg.onload = positionWatermark;
+      lightboxImg.src = img.imageUrl;
+      // Fallback daca e din cache si onload nu se mai declanseaza
+      if (lightboxImg.complete && lightboxImg.naturalWidth > 0) {
+        setTimeout(positionWatermark, 50);
+      }
       if (lightboxDots) {
         lightboxDots.innerHTML = item.images.length > 1
           ? item.images.map((_, i) =>
