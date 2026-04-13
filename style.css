@@ -1207,22 +1207,15 @@ body.menu-open {
   display: block;
 }
 
-.lightbox-img-wrap {
-  position: relative;
-  display: inline-block;
-}
-
-.lightbox-img-wrap::after {
-  content: '';
+.lightbox-watermark {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 10%;
-  min-width: 50px;
-  max-width: 100px;
+  bottom: 70px;
+  right: calc(50% - min(45vw, 42.5vh));
+  width: clamp(50px, 6vw, 90px);
   aspect-ratio: 1;
   background: url('logo.png') center/contain no-repeat;
   opacity: 0.22;
   pointer-events: none;
   filter: brightness(0) invert(1);
+  z-index: 10001;
 }

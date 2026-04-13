@@ -121,6 +121,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     lightboxImageIndex = imgIdx || 0;
     showLightboxImage();
     lightbox.classList.add('open');
+    // Watermark in lightbox
+    let wm = document.querySelector('.lightbox-watermark');
+    if (!wm) {
+      wm = document.createElement('div');
+      wm.className = 'lightbox-watermark';
+      lightbox.appendChild(wm);
+    }
     document.body.style.overflow = 'hidden';
   }
 
