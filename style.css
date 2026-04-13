@@ -1198,18 +1198,31 @@ body.menu-open {
 }
 
 /* Watermark in lightbox */
-#lightbox::after {
+#lightbox {
+  position: relative;
+}
+
+#lightboxImg {
+  position: relative;
+  display: block;
+}
+
+.lightbox-img-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.lightbox-img-wrap::after {
   content: '';
   position: absolute;
-  bottom: 60px;
-  right: calc(50% - 45vw);
-  width: 8vw;
-  max-width: 120px;
-  min-width: 60px;
+  bottom: 10px;
+  right: 10px;
+  width: 10%;
+  min-width: 50px;
+  max-width: 100px;
   aspect-ratio: 1;
   background: url('logo.png') center/contain no-repeat;
-  opacity: 0.2;
+  opacity: 0.22;
   pointer-events: none;
   filter: brightness(0) invert(1);
-  z-index: 10000;
 }
