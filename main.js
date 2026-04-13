@@ -1,5 +1,5 @@
 // =============================================
-// KLIK Mob — JavaScript Principal v6
+// KLIK Mob — JavaScript Principal v7
 // =============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -38,16 +38,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const id = a.getAttribute('href');
       const el = document.querySelector(id);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
-      // Stergem hash-ul din URL dupa scroll
       setTimeout(() => history.replaceState(null, '', location.pathname), 800);
     });
   });
 
-  // --- GALLERY ---
+  // --- GALLERY CU PAGINATIE ---
   let currentCat = 'toate';
+  let allItems = [];
   let lightboxItems = [];
   let lightboxIndex = 0;
   let lightboxImageIndex = 0;
+  let currentPage = 1;
+  const ITEMS_PER_PAGE = 6;
 
   function getCatEmoji(cat) {
     const map = { bucatarie: '🍳', dormitor: '🛏', baie: '🚿', living: '🛋', birou: '💼', exterior: '🌿' };
@@ -58,18 +60,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     return map[cat] || cat;
   }
 
-  async function renderGallery(cat) {
+  function renderPage() {
     const grid = document.getElementById('gallery-grid');
     const empty = document.getElementById('gallery-empty');
     grid.querySelectorAll('.gallery-item').forEach(el => el.remove());
+
+    const oldPag = document.getElementById('gallery-pagination');
+    if (oldPag) oldPag.remove();
+
+    if (!allItems || allItems.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
     empty.style.display = 'none';
 
-    const items = await window.KlikAPI.fetchItems(cat === 'toate' ? null : cat);
-    lightboxItems = items || [];
+    lightboxItems = allItems;
+    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pageItems = allItems.slice(start, start + ITEMS_PER_PAGE);
 
-    if (!items || items.length === 0) { empty.style.display = 'block'; return; }
-
-    items.forEach((item, idx) => {
+    pageItems.forEach((item) => {
+      const idx = allItems.indexOf(item);
       const div = document.createElement('div');
       div.className = 'gallery-item';
       div.dataset.idx = idx;
@@ -101,6 +112,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       div.addEventListener('click', () => openLightbox(idx, 0));
       grid.insertBefore(div, empty);
     });
+
+    if (totalPages > 1) {
+      const pag = document.createElement('div');
+      pag.id = 'gallery-pagination';
+      pag.className = 'gallery-pagination';
+      pag.innerHTML = `
+        <button class="pag-btn" id="pagPrev" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
+        <span class="pag-info">${currentPage} / ${totalPages}</span>
+        <button class="pag-btn" id="pagNext" ${currentPage === totalPages ? 'disabled' : ''}>›</button>
+      `;
+      grid.parentNode.insertBefore(pag, grid.nextSibling);
+
+      document.getElementById('pagPrev').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPage();
+          document.getElementById('galerie').scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+      document.getElementById('pagNext').addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPage();
+          document.getElementById('galerie').scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }
+  }
+
+  async function renderGallery(cat) {
+    const items = await window.KlikAPI.fetchItems(cat === 'toate' ? null : cat);
+    allItems = items || [];
+    currentPage = 1;
+    renderPage();
   }
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -124,48 +169,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const imgW = lightboxImg.naturalWidth;
     const imgH = lightboxImg.naturalHeight;
     if (!imgW || !imgH) return;
-
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const maxW = vw * 0.9;
     const maxH = vh * 0.85;
     const ratio = imgW / imgH;
-
     let rendW, rendH;
-    if (ratio > maxW / maxH) {
-      rendW = maxW; rendH = maxW / ratio;
-    } else {
-      rendH = maxH; rendW = maxH * ratio;
-    }
-
+    if (ratio > maxW / maxH) { rendW = maxW; rendH = maxW / ratio; }
+    else { rendH = maxH; rendW = maxH * ratio; }
     const imgLeft = (vw - rendW) / 2;
     const imgTop = (vh - rendH) / 2;
     const size = Math.min(rendW, rendH) * 0.15;
-
     let wm = lightbox.querySelector('.lightbox-watermark');
     if (!wm) {
       wm = document.createElement('div');
       wm.className = 'lightbox-watermark';
       lightbox.appendChild(wm);
     }
-    wm.style.cssText = `
-      position:fixed;
-      width:${size}px;
-      height:${size}px;
-      left:${imgLeft + rendW - size - 12}px;
-      top:${imgTop + rendH - size - 12}px;
-      background:url('logo.png') center/contain no-repeat;
-      opacity:0.22;
-      pointer-events:none;
-      filter:brightness(0) invert(1);
-      z-index:10001;
-    `;
+    wm.style.cssText = `position:fixed;width:${size}px;height:${size}px;left:${imgLeft + rendW - size - 12}px;top:${imgTop + rendH - size - 12}px;background:url('logo.png') center/contain no-repeat;opacity:0.22;pointer-events:none;filter:brightness(0) invert(1);z-index:10001;`;
   }
 
   function openLightbox(itemIdx, imgIdx) {
     lightboxIndex = itemIdx;
     lightboxImageIndex = imgIdx || 0;
-    // Resetam orice stil pe body inainte sa deschidem
     document.body.style.top = '';
     document.body.classList.remove('menu-open');
     navLinks.classList.remove('open');
@@ -183,19 +209,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       lightboxImg.src = img.imageUrl;
       lightboxImg.style.display = 'block';
       lightboxImg.onload = updateWatermark;
-      if (lightboxImg.complete && lightboxImg.naturalWidth > 0) {
-        setTimeout(updateWatermark, 30);
-      }
+      if (lightboxImg.complete && lightboxImg.naturalWidth > 0) setTimeout(updateWatermark, 30);
       if (lightboxDots) {
         lightboxDots.innerHTML = item.images.length > 1
-          ? item.images.map((_, i) =>
-            `<span class="lb-dot ${i === lightboxImageIndex ? 'active' : ''}" data-i="${i}"></span>`
-          ).join('') : '';
+          ? item.images.map((_, i) => `<span class="lb-dot ${i === lightboxImageIndex ? 'active' : ''}" data-i="${i}"></span>`).join('') : '';
         lightboxDots.querySelectorAll('.lb-dot').forEach(dot => {
-          dot.addEventListener('click', () => {
-            lightboxImageIndex = parseInt(dot.dataset.i);
-            showLightboxImage();
-          });
+          dot.addEventListener('click', () => { lightboxImageIndex = parseInt(dot.dataset.i); showLightboxImage(); });
         });
       }
     } else {
@@ -212,23 +231,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (wm) wm.remove();
   }
 
-  window.addEventListener('resize', () => {
-    if (lightbox.classList.contains('open')) updateWatermark();
-  });
-
+  window.addEventListener('resize', () => { if (lightbox.classList.contains('open')) updateWatermark(); });
   document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
   document.getElementById('lightboxPrev').addEventListener('click', () => {
     const item = lightboxItems[lightboxIndex];
     const hasMultiple = item && item.images && item.images.length > 1;
-    if (hasMultiple && lightboxImageIndex > 0) { lightboxImageIndex--; }
+    if (hasMultiple && lightboxImageIndex > 0) lightboxImageIndex--;
     else { lightboxIndex = (lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length; lightboxImageIndex = 0; }
     showLightboxImage();
   });
   document.getElementById('lightboxNext').addEventListener('click', () => {
     const item = lightboxItems[lightboxIndex];
     const hasMultiple = item && item.images && item.images.length > 1;
-    if (hasMultiple && lightboxImageIndex < item.images.length - 1) { lightboxImageIndex++; }
+    if (hasMultiple && lightboxImageIndex < item.images.length - 1) lightboxImageIndex++;
     else { lightboxIndex = (lightboxIndex + 1) % lightboxItems.length; lightboxImageIndex = 0; }
     showLightboxImage();
   });
