@@ -1,5 +1,5 @@
 // =============================================
-// KLIK Mob — Admin Panel v4 — imagini multiple
+// KLIK Mob — Admin Panel v5 — cover + delete imagini
 // =============================================
 
 let sessionUser = null;
@@ -103,7 +103,6 @@ async function renderAdminGallery(filter) {
     const hasImages = item.images && item.images.length > 0;
     let imgHTML = '';
     if (hasImages) {
-      // Cloudinary URL direct - fara prefix
       const cover = item.images[0].imageUrl;
       imgHTML = `
         <div class="admin-card-img-wrap">
@@ -122,7 +121,7 @@ async function renderAdminGallery(filter) {
         ${item.description ? `<p>${item.description}</p>` : ''}
       </div>
       <div class="admin-card-actions">
-        <button class="btn-sm btn-edit" data-id="${item.id}" title="Adaugă poze">📸 Poze</button>
+        <button class="btn-sm btn-edit" data-id="${item.id}" title="Editează pozele">✏️ Editează</button>
         <button class="btn-sm btn-del" data-id="${item.id}">🗑 Șterge</button>
         <span class="admin-card-date">${item.createdAt ? item.createdAt.split('T')[0] : ''}</span>
       </div>`;
@@ -134,7 +133,7 @@ async function renderAdminGallery(filter) {
     btn.addEventListener('click', () => openDeleteModal(parseInt(btn.dataset.id)));
   });
   grid.querySelectorAll('.btn-edit').forEach(btn => {
-    btn.addEventListener('click', () => openAddImagesModal(parseInt(btn.dataset.id)));
+    btn.addEventListener('click', () => openEditImagesModal(parseInt(btn.dataset.id)));
   });
 }
 
@@ -146,7 +145,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
-// --- DELETE MODAL ---
+// --- DELETE MODAL (lucrare intreaga) ---
 let pendingDeleteId = null;
 const deleteModal = document.getElementById('deleteModal');
 
@@ -168,24 +167,124 @@ deleteModal.addEventListener('click', e => {
   if (e.target === deleteModal) { deleteModal.classList.remove('open'); pendingDeleteId = null; }
 });
 
-// --- ADD IMAGES MODAL ---
-function openAddImagesModal(itemId) {
-  const modal = document.getElementById('addImagesModal');
-  modal.dataset.itemId = itemId;
-  document.getElementById('addImagesInput').value = '';
-  document.getElementById('addImagesPreview').innerHTML = '';
-  document.getElementById('addImagesMsg').textContent = '';
+// =============================================
+// EDIT IMAGES MODAL — sterge poze + schimba coperta + adauga poze noi
+// =============================================
+let editItemData = null; // { id, images: [{id, imageUrl, isCover}] }
+
+async function openEditImagesModal(itemId) {
+  const modal = document.getElementById('editImagesModal');
+  const msg = document.getElementById('editImagesMsg');
+  msg.textContent = '';
+  document.getElementById('editImagesGrid').innerHTML = '<p style="color:#aaa;padding:1rem;">Se încarcă pozele...</p>';
+  document.getElementById('addMoreImagesInput').value = '';
+  document.getElementById('addMorePreview').innerHTML = '';
   modal.classList.add('open');
+
+  try {
+    const result = await window.KlikAPI.adminFetchAll(sessionUser, sessionPass);
+    const items = (result && result.items) ? result.items : [];
+    const item = items.find(i => i.id === itemId);
+    if (!item) { msg.textContent = '❌ Lucrarea nu a fost găsită.'; return; }
+
+    // Clone imaginile ca sa putem modifica ordinea local (prima = coperta)
+    editItemData = {
+      id: item.id,
+      images: (item.images || []).map((img, idx) => ({ ...img, isCover: idx === 0 }))
+    };
+    renderEditImagesGrid();
+  } catch (e) {
+    document.getElementById('editImagesGrid').innerHTML = '<p style="color:#e74c3c;padding:1rem;">Eroare la încărcare.</p>';
+  }
 }
 
-document.getElementById('closeAddImages')?.addEventListener('click', () => {
-  document.getElementById('addImagesModal').classList.remove('open');
+function renderEditImagesGrid() {
+  const grid = document.getElementById('editImagesGrid');
+  grid.innerHTML = '';
+
+  if (!editItemData || editItemData.images.length === 0) {
+    grid.innerHTML = '<p style="color:#aaa;padding:1rem;text-align:center;">Nicio poză. Adaugă mai jos.</p>';
+    return;
+  }
+
+  editItemData.images.forEach((img, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'edit-img-wrap' + (img.isCover ? ' is-cover' : '');
+    wrap.dataset.imgId = img.id;
+    wrap.innerHTML = `
+      <img src="${img.imageUrl}" class="edit-img-thumb" alt="">
+      ${img.isCover ? '<span class="edit-cover-badge">⭐ Copertă</span>' : '<button class="btn-set-cover" data-idx="' + idx + '">Setează copertă</button>'}
+      <button class="btn-del-img" data-img-id="${img.id}" data-idx="${idx}" title="Șterge poza">✕</button>
+    `;
+    grid.appendChild(wrap);
+
+    wrap.querySelector('.btn-del-img').addEventListener('click', () => confirmDeleteImage(img.id, idx));
+    if (!img.isCover) {
+      wrap.querySelector('.btn-set-cover').addEventListener('click', () => setCover(idx));
+    }
+  });
+}
+
+function setCover(idx) {
+  // Muta imaginea la pozitia 0 (frontend only — la save trimitem ordinea la backend)
+  if (!editItemData) return;
+  const img = editItemData.images.splice(idx, 1)[0];
+  editItemData.images.unshift(img);
+  editItemData.images.forEach((im, i) => { im.isCover = i === 0; });
+  renderEditImagesGrid();
+  document.getElementById('editImagesMsg').textContent = '⭐ Coperta a fost schimbată. Apasă "Salvează" pentru a confirma.';
+  document.getElementById('editImagesMsg').style.color = '#b8860b';
+}
+
+let pendingDeleteImageId = null;
+let pendingDeleteImageIdx = null;
+const deleteImageModal = document.getElementById('deleteImageModal');
+
+function confirmDeleteImage(imgId, idx) {
+  pendingDeleteImageId = imgId;
+  pendingDeleteImageIdx = idx;
+  deleteImageModal.classList.add('open');
+}
+
+document.getElementById('cancelDeleteImage')?.addEventListener('click', () => {
+  deleteImageModal.classList.remove('open');
+  pendingDeleteImageId = null; pendingDeleteImageIdx = null;
 });
 
-document.getElementById('addImagesInput')?.addEventListener('change', function () {
-  const preview = document.getElementById('addImagesPreview');
+document.getElementById('confirmDeleteImage')?.addEventListener('click', async () => {
+  if (pendingDeleteImageId === null) return;
+  const msg = document.getElementById('editImagesMsg');
+  try {
+    await window.KlikAPI.adminDeleteImage(pendingDeleteImageId, sessionUser, sessionPass);
+    editItemData.images.splice(pendingDeleteImageIdx, 1);
+    if (editItemData.images.length > 0) editItemData.images[0].isCover = true;
+    renderEditImagesGrid();
+    msg.textContent = '✅ Poza a fost ștearsă.';
+    msg.style.color = 'green';
+  } catch (e) {
+    msg.textContent = '❌ Eroare la ștergere.';
+    msg.style.color = 'red';
+  }
+  deleteImageModal.classList.remove('open');
+  pendingDeleteImageId = null; pendingDeleteImageIdx = null;
+  setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
+});
+
+deleteImageModal.addEventListener('click', e => {
+  if (e.target === deleteImageModal) {
+    deleteImageModal.classList.remove('open');
+    pendingDeleteImageId = null; pendingDeleteImageIdx = null;
+  }
+});
+
+// Adauga poze noi in edit modal
+let addMoreFiles = [];
+
+document.getElementById('addMoreImagesInput')?.addEventListener('change', function () {
+  addMoreFiles = Array.from(this.files);
+  const preview = document.getElementById('addMorePreview');
   preview.innerHTML = '';
-  Array.from(this.files).forEach(file => {
+  addMoreFiles.forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
       const img = document.createElement('img');
@@ -197,44 +296,75 @@ document.getElementById('addImagesInput')?.addEventListener('change', function (
   });
 });
 
-document.getElementById('saveAddImages')?.addEventListener('click', async () => {
-  const modal = document.getElementById('addImagesModal');
-  const itemId = parseInt(modal.dataset.itemId);
-  const input = document.getElementById('addImagesInput');
-  const msg = document.getElementById('addImagesMsg');
+document.getElementById('triggerAddMore')?.addEventListener('click', () => {
+  document.getElementById('addMoreImagesInput').click();
+});
 
-  if (!input.files.length) { msg.textContent = '⚠️ Selectează cel puțin o imagine.'; return; }
-
-  const btn = document.getElementById('saveAddImages');
+// Salveaza: ordine coperta + poze noi
+document.getElementById('saveEditImages')?.addEventListener('click', async () => {
+  if (!editItemData) return;
+  const msg = document.getElementById('editImagesMsg');
+  const btn = document.getElementById('saveEditImages');
   btn.textContent = 'Se salvează...'; btn.disabled = true;
 
   try {
-    const result = await window.KlikAPI.adminAddImages(itemId, Array.from(input.files), sessionUser, sessionPass);
-    if (result && result.success) {
-      msg.style.color = 'green';
-      msg.textContent = '✅ Imaginile au fost adăugate!';
-      setTimeout(async () => {
-        modal.classList.remove('open');
-        const f = document.querySelector('.filter-btn.active')?.dataset.filter || 'toate';
-        await renderAdminGallery(f);
-        window.dispatchEvent(new Event('klikmob_updated'));
-      }, 1200);
-    } else {
-      msg.style.color = 'red';
-      msg.textContent = '❌ ' + (result?.message || 'Eroare');
+    // 1. Daca avem poze noi de adaugat
+    if (addMoreFiles.length > 0) {
+      const addResult = await window.KlikAPI.adminAddImages(editItemData.id, addMoreFiles, sessionUser, sessionPass);
+      if (!addResult || !addResult.success) {
+        msg.textContent = '❌ Eroare la adăugarea pozelor noi.';
+        msg.style.color = 'red';
+        btn.textContent = 'Salvează'; btn.disabled = false;
+        return;
+      }
     }
+
+    // 2. Schimba coperta daca e necesar (trimitem ordinea imaginilor)
+    if (editItemData.images.length > 0) {
+      const orderedIds = editItemData.images.map(img => img.id);
+      await window.KlikAPI.adminSetCover(editItemData.id, orderedIds[0], sessionUser, sessionPass);
+    }
+
+    msg.textContent = '✅ Modificările au fost salvate!';
+    msg.style.color = 'green';
+    addMoreFiles = [];
+    document.getElementById('addMoreImagesInput').value = '';
+    document.getElementById('addMorePreview').innerHTML = '';
+
+    setTimeout(async () => {
+      document.getElementById('editImagesModal').classList.remove('open');
+      const f = document.querySelector('.filter-btn.active')?.dataset.filter || 'toate';
+      await renderAdminGallery(f);
+      window.dispatchEvent(new Event('klikmob_updated'));
+    }, 1400);
   } catch (e) {
+    msg.textContent = '❌ Eroare la salvare.';
     msg.style.color = 'red';
-    msg.textContent = '❌ Eroare la server.';
   }
-  btn.textContent = 'Salvează imaginile'; btn.disabled = false;
+  btn.textContent = 'Salvează'; btn.disabled = false;
 });
 
-// --- UPLOAD FORM ---
+document.getElementById('closeEditImages')?.addEventListener('click', () => {
+  document.getElementById('editImagesModal').classList.remove('open');
+  editItemData = null;
+  addMoreFiles = [];
+});
+
+document.getElementById('editImagesModal')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('editImagesModal')) {
+    document.getElementById('editImagesModal').classList.remove('open');
+    editItemData = null; addMoreFiles = [];
+  }
+});
+
+// =============================================
+// UPLOAD FORM — cu selectare coperta
+// =============================================
 const dropZone = document.getElementById('dropZone');
 const dropInner = document.getElementById('dropInner');
 const imageInput = document.getElementById('imageInput');
 let selectedFiles = [];
+let coverIndex = 0; // indexul pozei selectate ca coperta
 
 document.getElementById('selectImageBtn').addEventListener('click', () => imageInput.click());
 
@@ -267,8 +397,12 @@ function renderPreviewStrip() {
   if (selectedFiles.length === 0) {
     dropPreview.style.display = 'none';
     dropInner.style.display = 'block';
+    coverIndex = 0;
     return;
   }
+
+  // Asigura-te ca coverIndex e valid
+  if (coverIndex >= selectedFiles.length) coverIndex = 0;
 
   dropInner.style.display = 'none';
   dropPreview.style.display = 'block';
@@ -277,16 +411,26 @@ function renderPreviewStrip() {
     const reader = new FileReader();
     reader.onload = e => {
       const wrap = document.createElement('div');
-      wrap.className = 'preview-thumb-wrap';
+      wrap.className = 'preview-thumb-wrap' + (idx === coverIndex ? ' is-cover' : '');
+      wrap.title = idx === coverIndex ? 'Copertă' : 'Click pentru a seta ca și copertă';
       wrap.innerHTML = `
         <img src="${e.target.result}" class="preview-thumb" alt="">
-        <button class="remove-thumb" data-idx="${idx}">✕</button>
-        ${idx === 0 ? '<span class="cover-label">Copertă</span>' : ''}`;
-      strip.appendChild(wrap);
-      wrap.querySelector('.remove-thumb').addEventListener('click', () => {
-        selectedFiles.splice(idx, 1);
+        <button class="remove-thumb" data-idx="${idx}" title="Elimină">✕</button>
+        ${idx === coverIndex ? '<span class="cover-label">⭐ Copertă</span>' : '<span class="set-cover-hint">Click = copertă</span>'}`;
+
+      // Click pe imagine => seteaza coperta
+      wrap.querySelector('.preview-thumb').addEventListener('click', () => {
+        coverIndex = idx;
         renderPreviewStrip();
       });
+
+      wrap.querySelector('.remove-thumb').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        selectedFiles.splice(idx, 1);
+        if (coverIndex >= selectedFiles.length) coverIndex = 0;
+        renderPreviewStrip();
+      });
+      strip.appendChild(wrap);
     };
     reader.readAsDataURL(file);
   });
@@ -300,6 +444,7 @@ function renderPreviewStrip() {
 
 function resetUploadForm() {
   selectedFiles = [];
+  coverIndex = 0;
   renderPreviewStrip();
   document.getElementById('itemTitle').value = '';
   document.getElementById('itemCategory').value = '';
@@ -326,10 +471,17 @@ document.getElementById('saveItemBtn').addEventListener('click', async () => {
   const saveBtn = document.getElementById('saveItemBtn');
   saveBtn.textContent = 'Se salvează...'; saveBtn.disabled = true;
 
+  // Reordoneaza fisierele: coperta prima
+  let filesToSend = [...selectedFiles];
+  if (coverIndex > 0 && filesToSend.length > 0) {
+    const cover = filesToSend.splice(coverIndex, 1)[0];
+    filesToSend.unshift(cover);
+  }
+
   try {
     const result = await window.KlikAPI.adminAddItem(
       { title, category, description: desc },
-      selectedFiles,
+      filesToSend,
       sessionUser, sessionPass
     );
     if (result && result.success) {
@@ -347,34 +499,4 @@ document.getElementById('saveItemBtn').addEventListener('click', async () => {
     showSaveError('Nu s-a putut conecta la server.');
   }
   saveBtn.textContent = '✓ Salvează pe site'; saveBtn.disabled = false;
-});
-
-// --- SETĂRI ---
-document.getElementById('changePassBtn').addEventListener('click', () => {
-  const msg = document.getElementById('passMsg');
-  msg.textContent = 'ℹ️ Parola se schimbă din Railway → Variables → KLIKMOB_ADMIN_PASSWORD';
-  msg.className = 'setting-msg ok';
-  setTimeout(() => msg.textContent = '', 6000);
-});
-
-document.getElementById('resetDataBtn').addEventListener('click', async () => {
-  if (confirm('Ești sigur? Toate lucrările vor fi șterse permanent!')) {
-    const msg = document.getElementById('resetMsg');
-    msg.textContent = '⏳ Se procesează...';
-    try {
-      const result = await window.KlikAPI.adminFetchAll(sessionUser, sessionPass);
-      if (result && result.items) {
-        for (const item of result.items) {
-          await window.KlikAPI.adminDeleteItem(item.id, sessionUser, sessionPass);
-        }
-      }
-      msg.textContent = '✅ Galeria a fost ștearsă.';
-      msg.className = 'setting-msg ok';
-      window.dispatchEvent(new Event('klikmob_updated'));
-    } catch (e) {
-      msg.textContent = '❌ Eroare.';
-      msg.className = 'setting-msg err';
-    }
-    setTimeout(() => msg.textContent = '', 4000);
-  }
 });

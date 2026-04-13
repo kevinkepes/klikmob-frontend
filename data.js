@@ -46,7 +46,6 @@ async function adminAddItem(itemData, imageFiles, u, p) {
   formData.append('title', itemData.title);
   formData.append('category', itemData.category);
   if (itemData.description) formData.append('description', itemData.description);
-  // Adaugam fiecare fisier cu acelasi key "images"
   if (imageFiles && imageFiles.length > 0) {
     imageFiles.forEach(file => formData.append('images', file));
   }
@@ -65,6 +64,15 @@ async function adminAddImages(itemId, imageFiles, u, p) {
     method: 'POST',
     headers: getAuthHeader(u, p),
     body: formData
+  });
+}
+
+// ADMIN — seteaza coperta (trimite imageId ca poza principala)
+async function adminSetCover(itemId, imageId, u, p) {
+  return await apiFetch(`/admin/items/${itemId}/cover`, {
+    method: 'PUT',
+    headers: { ...getAuthHeader(u, p), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageId })
   });
 }
 
@@ -102,6 +110,6 @@ function getDemoItems(category) {
 
 window.KlikAPI = {
   fetchItems, adminFetchAll, adminAddItem, adminAddImages,
-  adminDeleteImage, adminDeleteItem, checkBackendHealth,
-  getDemoItems, API_BASE
+  adminSetCover, adminDeleteImage, adminDeleteItem,
+  checkBackendHealth, getDemoItems, API_BASE
 };
