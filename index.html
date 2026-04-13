@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+  <meta name="geo.region" content="RO-SM">
+  <meta name="geo.placename" content="Satu Mare">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KLIK Mob — Mobilă la Comandă, Satu Mare</title>
+  <meta name="description"
+    content="KLIK Mob — mobilă la comandă de calitate în Satu Mare. Bucătării, dormitoare, băi și living personalizate. Contactați-ne la 0742 121 735.">
+  <meta name="keywords" content="mobila la comanda, Satu Mare, bucatarie, dormitor, mobilier personalizat">
+  <meta property="og:title" content="KLIK Mob — Mobilă la Comandă, Satu Mare">
+  <meta property="og:description" content="Proiectăm și producem mobilă personalizată de înaltă calitate în Satu Mare.">
+  <meta property="og:image" content="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#acasa" class="logo-link">
+        <img src="logo.png" alt="KLIK Mob" class="nav-logo-img">
+        <span class="logo-text">KLIK<em>Mob</em></span>
+      </a>
+      <button class="hamburger" id="hamburger" aria-label="Meniu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <button class="menu-close" id="menuClose">✕</button>
+        <li><a href="#acasa">Acasă</a></li>
+        <li><a href="#galerie">Galerie</a></li>
+        <li><a href="#servicii">Servicii</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="acasa">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <p class="hero-label">Mobilă la comandă · Satu Mare</p>
+      <h1>Mobilier creat<br><em>pentru tine</em></h1>
+      <p class="hero-sub">Proiectăm și producem mobilă personalizată de înaltă calitate — de la bucătării elegante la
+        dormitoare rafinate. Fiecare piesă, gândită special pentru spațiul tău.</p>
+      <div class="hero-btns">
+        <a href="#galerie" class="btn btn-primary">Vezi Galeria</a>
+        <a href="#contact" class="btn btn-outline">Solicită Ofertă</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERIE -->
+  <section class="galerie-section" id="galerie">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Portofoliu</span>
+        <h2>Lucrările Noastre</h2>
+        <p>Explorați colecția de mobilier realizat pentru clienții noștri</p>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-cat="toate">Toate</button>
+        <button class="tab-btn" data-cat="bucatarie">Bucătărie</button>
+        <button class="tab-btn" data-cat="dormitor">Dormitor</button>
+        <button class="tab-btn" data-cat="baie">Baie</button>
+        <button class="tab-btn" data-cat="living">Living</button>
+        <button class="tab-btn" data-cat="birou">Birou</button>
+        <button class="tab-btn" data-cat="exterior">Exterior</button>
+      </div>
+      <div class="gallery-grid" id="gallery-grid">
+        <div class="gallery-empty" id="gallery-empty" style="display:none;">
+          <div class="empty-icon">🪑</div>
+          <p>Nicio lucrare în această categorie momentan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICII -->
+  <section class="servicii-section" id="servicii">
+    <div class="container">
+      <div class="section-header light">
+        <span class="section-tag">Ce oferim</span>
+        <h2>Serviciile Noastre</h2>
+      </div>
+      <div class="servicii-grid">
+        <div class="serviciu-card">
+          <div class="s-icon">🍳</div>
+          <h3>Mobilă Bucătărie</h3>
+          <p>Bucătării funcționale și elegante, adaptate perfect spațiului și stilului dumneavoastră.</p>
+        </div>
+        <div class="serviciu-card">
+          <div class="s-icon">🛏</div>
+          <h3>Mobilă Dormitor</h3>
+          <p>Dormitoare complete — paturi, dulapuri și noptiere, toate armonizate și personalizate.</p>
+        </div>
+        <div class="serviciu-card">
+          <div class="s-icon">🚿</div>
+          <h3>Mobilă Baie</h3>
+          <p>Soluții practice și estetice pentru băi de orice dimensiune.</p>
+        </div>
+        <div class="serviciu-card">
+          <div class="s-icon">🛋</div>
+          <h3>Mobilă Living</h3>
+          <p>Biblioteci, comode, corpuri TV și sisteme de depozitare pentru living.</p>
+        </div>
+        <div class="serviciu-card">
+          <div class="s-icon">💼</div>
+          <h3>Mobilă Birou</h3>
+          <p>Birouri și mobilier de lucru ergonomic, configurat după nevoile tale.</p>
+        </div>
+        <div class="serviciu-card">
+          <div class="s-icon">🌿</div>
+          <h3>Mobilă Exterior</h3>
+          <p>Mobilier rezistent pentru terasă, grădină și spații exterioare.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DE CE NOI -->
+  <section class="denoi-section">
+    <div class="container denoi-inner">
+      <div class="denoi-text">
+        <span class="section-tag">De ce KLIK Mob?</span>
+        <h2>Calitate și precizie la fiecare detaliu</h2>
+        <ul class="check-list">
+          <li>✔ Materiale premium, selectate cu grijă</li>
+          <li>✔ Design personalizat după planul tău</li>
+          <li>✔ Echipă cu experiență și pasiune</li>
+          <li>✔ Garanție și service post-vânzare</li>
+        </ul>
+        <a href="#contact" class="btn btn-primary">Contactează-ne</a>
+      </div>
+      <div class="denoi-stats">
+        <div class="stat"><span class="stat-num" data-target="500">0</span><span>+</span>
+          <p>Proiecte finalizate</p>
+        </div>
+        <div class="stat"><span class="stat-num" data-target="10">0</span><span>+</span>
+          <p>Ani experiență</p>
+        </div>
+        <div class="stat"><span class="stat-num" data-target="100">0</span><span>%</span>
+          <p>Ceea ce cauți</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact-section" id="contact">
+    <div class="container contact-inner">
+
+      <!-- STANGA: info contact -->
+      <div class="contact-info">
+        <span class="section-tag">Hai să vorbim</span>
+        <h2>Contactează-ne</h2>
+        <p>Suntem disponibili pentru a discuta despre proiectul tău. Nu ezita să ne contactezi!</p>
+        <div class="contact-items">
+          <a href="tel:0742121735" class="contact-item">
+            <div class="c-icon">📞</div>
+            <div>
+              <strong>Telefon / Comenzi</strong>
+              <span>0742 121 735</span>
+            </div>
+          </a>
+          <a href="mailto:klikmob@yahoo.com" class="contact-item">
+            <div class="c-icon">✉️</div>
+            <div>
+              <strong>Email</strong>
+              <span>klikmob@yahoo.com</span>
+            </div>
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=100005519327804" target="_blank" class="contact-item">
+            <div class="c-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+            </div>
+            <div>
+              <strong>Facebook</strong>
+              <span>Urmărește-ne pe Facebook</span>
+            </div>
+          </a>
+          <div class="contact-item">
+            <div class="c-icon">🕐</div>
+            <div>
+              <strong>Program</strong>
+              <span>Lun–Vin: 07:00 – 15:30</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DREAPTA: locatie -->
+      <div class="contact-map">
+        <h3>Locația Noastră</h3>
+        <p class="map-address">📍 Strada Depozitelor 62, 440198 Satu Mare</p>
+        <div class="showroom-photos">
+          <div class="showroom-photo showroom-top">
+            <img src="showroom-interior.png" alt="Interior showroom KLIK Mob">
+          </div>
+          <div class="showroom-photo showroom-bottom">
+            <img src="showroom-exterior.png" alt="Exterior showroom KLIK Mob">
+          </div>
+        </div>
+        <a href="https://www.google.com/maps/place/KLIK+MOB/@47.7705233,22.8521067,17z/data=!3m1!4b1!4m6!3m5!1s0x4738077d5aed1965:0xda8eb084faf87229!8m2!3d47.7705233!4d22.8546816!16s%2Fg%2F11xz8t3p97?entry=ttu&g_ep=EgoyMDI2MDQwOC4wIKXMDSoASAFQAw%3D%3D"
+          target="_blank" class="btn btn-primary"
+          style="margin-top:1rem; width:100%; justify-content:center; display:flex;">
+          📍 Deschide în Google Maps
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo-wrap">
+          <img src="logo.png" alt="KLIK Mob" class="footer-logo-img">
+          <div class="logo footer-logo-text">KLIK<span>Mob</span></div>
+        </div>
+        <p>Mobilă la comandă de calitate, produsă cu pasiune în Satu Mare.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#acasa">Acasă</a>
+        <a href="#galerie">Galerie</a>
+        <a href="#servicii">Servicii</a>
+        <a href="#contact">Contact</a>
+        <a href="admin.html">Admin</a>
+      </div>
+      <div class="footer-contact">
+        <a href="tel:0742121735">📞 0742 121 735</a>
+        <a href="mailto:klikmob@yahoo.com">✉ klikmob@yahoo.com</a>
+        <a href="https://www.facebook.com/profile.php?id=100005519327804" target="_blank">f Facebook</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2016 KLIK Mob · Toate drepturile rezervate · Satu Mare, România</p>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <button class="lightbox-prev" id="lightboxPrev">‹</button>
+    <button class="lightbox-next" id="lightboxNext">›</button>
+    <img src="" alt="" id="lightboxImg">
+    <div id="lightboxDots"></div>
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>
