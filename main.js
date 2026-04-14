@@ -4,6 +4,14 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+  // --- BLOCHEAZA DOUBLE-TAP ZOOM (Chrome Android) ---
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', e => {
+    const now = Date.now();
+    if (now - lastTouchEnd < 300) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
+
   // --- NAVBAR ---
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
@@ -243,26 +251,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     const item = lightboxItems[lightboxIndex];
     if (!item) return;
     const hasImages = item.images && item.images.length > 0;
+
     if (hasImages) {
-      const img = item.images[lightboxImageIndex];
-      lightboxImg.src = img.imageUrl;
-      lightboxImg.style.display = 'block';
-      lightboxImg.onload = updateWatermark;
-      if (lightboxImg.complete && lightboxImg.naturalWidth > 0) setTimeout(updateWatermark, 30);
+      const imgData = item.images[lightboxImageIndex];
+      const newImg = new Image();
+      newImg.onload = () => {
+        lightboxImg.src = newImg.src;
+        lightboxImg.style.display = 'block';
+        updateWatermark();
+      };
+      newImg.src = imgData.imageUrl;
+      // Daca e deja in cache, onload nu se mai declanseaza — fallback
+      if (newImg.complete && newImg.naturalWidth > 0) {
+        lightboxImg.src = newImg.src;
+        lightboxImg.style.display = 'block';
+        setTimeout(updateWatermark, 30);
+      }
+
       if (lightboxDots) {
         lightboxDots.innerHTML = item.images.length > 1
-          ? item.images.map((_, i) => `<span class="lb-dot ${i === lightboxImageIndex ? 'active' : ''}" data-i="${i}"></span>`).join('') : '';
+          ? item.images.map((_, i) =>
+            `<span class="lb-dot ${i === lightboxImageIndex ? 'active' : ''}" data-i="${i}"></span>`
+          ).join('')
+          : '';
         lightboxDots.querySelectorAll('.lb-dot').forEach(dot => {
-          dot.addEventListener('click', () => { lightboxImageIndex = parseInt(dot.dataset.i); showLightboxImage(); });
+          dot.addEventListener('click', e => {
+            e.stopPropagation();
+            lightboxImageIndex = parseInt(dot.dataset.i);
+            showLightboxImage();
+          });
         });
       }
     } else {
+      lightboxImg.src = '';
       lightboxImg.style.display = 'none';
       if (lightboxDots) lightboxDots.innerHTML = '';
     }
-    lightboxCaption.textContent = item.title + (item.description ? ' — ' + item.description : '');
 
-    // Preincarca in background pozele adiacente
+    lightboxCaption.textContent = item.title + (item.description ? ' — ' + item.description : '');
     setTimeout(preloadAdjacentImages, 50);
   }
 
@@ -273,29 +299,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (wm) wm.remove();
   }
 
-  window.addEventListener('resize', () => { if (lightbox.classList.contains('open')) updateWatermark(); });
-  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-  document.getElementById('lightboxPrev').addEventListener('click', () => {
+  function lightboxPrevImage() {
     const item = lightboxItems[lightboxIndex];
     const hasMultiple = item && item.images && item.images.length > 1;
     if (hasMultiple && lightboxImageIndex > 0) lightboxImageIndex--;
     else { lightboxIndex = (lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length; lightboxImageIndex = 0; }
     showLightboxImage();
-  });
-  document.getElementById('lightboxNext').addEventListener('click', () => {
+  }
+
+  function lightboxNextImage() {
     const item = lightboxItems[lightboxIndex];
     const hasMultiple = item && item.images && item.images.length > 1;
     if (hasMultiple && lightboxImageIndex < item.images.length - 1) lightboxImageIndex++;
     else { lightboxIndex = (lightboxIndex + 1) % lightboxItems.length; lightboxImageIndex = 0; }
     showLightboxImage();
-  });
+  }
+
+  window.addEventListener('resize', () => { if (lightbox.classList.contains('open')) updateWatermark(); });
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+  document.getElementById('lightboxPrev').addEventListener('click', lightboxPrevImage);
+  document.getElementById('lightboxNext').addEventListener('click', lightboxNextImage);
   document.addEventListener('keydown', e => {
     if (!lightbox.classList.contains('open')) return;
     if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') document.getElementById('lightboxPrev').click();
-    if (e.key === 'ArrowRight') document.getElementById('lightboxNext').click();
+    if (e.key === 'ArrowLeft') lightboxPrevImage();
+    if (e.key === 'ArrowRight') lightboxNextImage();
   });
+
+  // --- SWIPE PE MOBILE ---
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchMoved = false;
+
+  lightbox.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchMoved = false;
+  }, { passive: true });
+
+  lightbox.addEventListener('touchmove', e => {
+    touchMoved = true;
+  }, { passive: true });
+
+  lightbox.addEventListener('touchend', e => {
+    if (!touchMoved) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) lightboxNextImage();
+    else lightboxPrevImage();
+  }, { passive: true });
 
   // --- COUNTERS ---
   const counters = document.querySelectorAll('.stat-num');
