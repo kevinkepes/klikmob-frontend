@@ -159,6 +159,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await renderGallery('toate');
 
+  // Preincarca cover-urile tuturor lucrarilor din pagina curenta
+  setTimeout(() => {
+    allItems.slice(0, ITEMS_PER_PAGE).forEach(item => {
+      if (item.images && item.images.length > 0) {
+        const img = new Image();
+        img.src = item.images[0].imageUrl;
+      }
+    });
+  }, 500);
+
   // --- LIGHTBOX ---
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
@@ -189,9 +199,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     wm.style.cssText = `position:fixed;width:${size}px;height:${size}px;left:${imgLeft + rendW - size - 12}px;top:${imgTop + rendH - size - 12}px;background:url('logo.png') center/contain no-repeat;opacity:0.22;pointer-events:none;filter:brightness(0) invert(1);z-index:10001;`;
   }
 
+  // Preincarca imaginile adiacente (urmatoarea + precedenta) in background
+  function preloadAdjacentImages() {
+    const item = lightboxItems[lightboxIndex];
+    if (!item || !item.images || item.images.length === 0) return;
+
+    const urls = [];
+
+    // Poza urmatoare din aceeasi lucrare
+    if (lightboxImageIndex + 1 < item.images.length) {
+      urls.push(item.images[lightboxImageIndex + 1].imageUrl);
+    }
+    // Poza precedenta din aceeasi lucrare
+    if (lightboxImageIndex - 1 >= 0) {
+      urls.push(item.images[lightboxImageIndex - 1].imageUrl);
+    }
+    // Prima poza din lucrarea urmatoare
+    const nextItem = lightboxItems[(lightboxIndex + 1) % lightboxItems.length];
+    if (nextItem && nextItem.images && nextItem.images.length > 0) {
+      urls.push(nextItem.images[0].imageUrl);
+    }
+    // Prima poza din lucrarea precedenta
+    const prevItem = lightboxItems[(lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length];
+    if (prevItem && prevItem.images && prevItem.images.length > 0) {
+      urls.push(prevItem.images[0].imageUrl);
+    }
+
+    urls.forEach(url => { const img = new Image(); img.src = url; });
+  }
+
   function openLightbox(itemIdx, imgIdx) {
     lightboxIndex = itemIdx;
     lightboxImageIndex = imgIdx || 0;
+    document.body.style.top = '';
     document.body.classList.remove('menu-open');
     navLinks.classList.remove('open');
     lightbox.classList.add('open');
@@ -203,47 +243,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     const item = lightboxItems[lightboxIndex];
     if (!item) return;
     const hasImages = item.images && item.images.length > 0;
-
     if (hasImages) {
-      const imgData = item.images[lightboxImageIndex];
-
-      // Creaza un nou obiect Image pentru a evita cache-ul problemei
-      const newImg = new Image();
-      newImg.onload = () => {
-        lightboxImg.src = newImg.src;
-        lightboxImg.style.display = 'block';
-        updateWatermark();
-      };
-      // Daca e deja in cache, onload s-ar putea sa nu fie apelat — fallback
-      newImg.src = imgData.imageUrl;
-      if (newImg.complete && newImg.naturalWidth > 0) {
-        lightboxImg.src = newImg.src;
-        lightboxImg.style.display = 'block';
-        setTimeout(updateWatermark, 30);
-      }
-
-      // Dots
+      const img = item.images[lightboxImageIndex];
+      lightboxImg.src = img.imageUrl;
+      lightboxImg.style.display = 'block';
+      lightboxImg.onload = updateWatermark;
+      if (lightboxImg.complete && lightboxImg.naturalWidth > 0) setTimeout(updateWatermark, 30);
       if (lightboxDots) {
         lightboxDots.innerHTML = item.images.length > 1
-          ? item.images.map((_, i) =>
-            `<span class="lb-dot ${i === lightboxImageIndex ? 'active' : ''}" data-i="${i}"></span>`
-          ).join('')
-          : '';
+          ? item.images.map((_, i) => `<span class="lb-dot ${i === lightboxImageIndex ? 'active' : ''}" data-i="${i}"></span>`).join('') : '';
         lightboxDots.querySelectorAll('.lb-dot').forEach(dot => {
-          dot.addEventListener('click', e => {
-            e.stopPropagation();
-            lightboxImageIndex = parseInt(dot.dataset.i);
-            showLightboxImage();
-          });
+          dot.addEventListener('click', () => { lightboxImageIndex = parseInt(dot.dataset.i); showLightboxImage(); });
         });
       }
     } else {
-      lightboxImg.src = '';
       lightboxImg.style.display = 'none';
       if (lightboxDots) lightboxDots.innerHTML = '';
     }
-
     lightboxCaption.textContent = item.title + (item.description ? ' — ' + item.description : '');
+
+    // Preincarca in background pozele adiacente
+    setTimeout(preloadAdjacentImages, 50);
   }
 
   function closeLightbox() {
@@ -253,67 +273,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (wm) wm.remove();
   }
 
-  function lightboxPrevImage() {
-    const item = lightboxItems[lightboxIndex];
-    const hasMultiple = item && item.images && item.images.length > 1;
-    if (hasMultiple && lightboxImageIndex > 0) {
-      lightboxImageIndex--;
-    } else {
-      lightboxIndex = (lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length;
-      lightboxImageIndex = 0;
-    }
-    showLightboxImage();
-  }
-
-  function lightboxNextImage() {
-    const item = lightboxItems[lightboxIndex];
-    const hasMultiple = item && item.images && item.images.length > 1;
-    if (hasMultiple && lightboxImageIndex < item.images.length - 1) {
-      lightboxImageIndex++;
-    } else {
-      lightboxIndex = (lightboxIndex + 1) % lightboxItems.length;
-      lightboxImageIndex = 0;
-    }
-    showLightboxImage();
-  }
-
   window.addEventListener('resize', () => { if (lightbox.classList.contains('open')) updateWatermark(); });
   document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-  document.getElementById('lightboxPrev').addEventListener('click', lightboxPrevImage);
-  document.getElementById('lightboxNext').addEventListener('click', lightboxNextImage);
-
+  document.getElementById('lightboxPrev').addEventListener('click', () => {
+    const item = lightboxItems[lightboxIndex];
+    const hasMultiple = item && item.images && item.images.length > 1;
+    if (hasMultiple && lightboxImageIndex > 0) lightboxImageIndex--;
+    else { lightboxIndex = (lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length; lightboxImageIndex = 0; }
+    showLightboxImage();
+  });
+  document.getElementById('lightboxNext').addEventListener('click', () => {
+    const item = lightboxItems[lightboxIndex];
+    const hasMultiple = item && item.images && item.images.length > 1;
+    if (hasMultiple && lightboxImageIndex < item.images.length - 1) lightboxImageIndex++;
+    else { lightboxIndex = (lightboxIndex + 1) % lightboxItems.length; lightboxImageIndex = 0; }
+    showLightboxImage();
+  });
   document.addEventListener('keydown', e => {
     if (!lightbox.classList.contains('open')) return;
     if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') lightboxPrevImage();
-    if (e.key === 'ArrowRight') lightboxNextImage();
+    if (e.key === 'ArrowLeft') document.getElementById('lightboxPrev').click();
+    if (e.key === 'ArrowRight') document.getElementById('lightboxNext').click();
   });
-
-  // --- SWIPE PE MOBILE ---
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchMoved = false;
-
-  lightbox.addEventListener('touchstart', e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchMoved = false;
-  }, { passive: true });
-
-  lightbox.addEventListener('touchmove', e => {
-    touchMoved = true;
-  }, { passive: true });
-
-  lightbox.addEventListener('touchend', e => {
-    if (!touchMoved) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-    // Doar swipe orizontal (mai mare decat vertical)
-    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-    if (dx < 0) lightboxNextImage();
-    else lightboxPrevImage();
-  }, { passive: true });
 
   // --- COUNTERS ---
   const counters = document.querySelectorAll('.stat-num');
