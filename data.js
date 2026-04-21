@@ -84,6 +84,19 @@ async function adminDeleteImage(imageId, u, p) {
   });
 }
 
+// ADMIN — actualizeaza titlu, categorie, descriere
+async function adminUpdateItem(itemId, data, u, p) {
+  const formData = new FormData();
+  if (data.title) formData.append('title', data.title);
+  if (data.category) formData.append('category', data.category);
+  if (data.description !== undefined) formData.append('description', data.description);
+  return await apiFetch(`/admin/items/${itemId}`, {
+    method: 'PUT',
+    headers: getAuthHeader(u, p),
+    body: formData
+  });
+}
+
 // ADMIN — sterge o lucrare intreaga
 async function adminDeleteItem(id, u, p) {
   return await apiFetch(`/admin/items/${id}`, {
@@ -124,6 +137,6 @@ function getDemoItems(category) {
 
 window.KlikAPI = {
   fetchItems, adminFetchAll, adminAddItem, adminAddImages,
-  adminSetCover, adminDeleteImage, adminDeleteItem,
+  adminSetCover, adminDeleteImage, adminUpdateItem, adminDeleteItem,
   checkBackendHealth, getDemoItems, API_BASE
 };

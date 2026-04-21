@@ -60,11 +60,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ITEMS_PER_PAGE = 6;
 
   function getCatEmoji(cat) {
-    const map = { bucatarie: '🍳', dormitor: '🛏', baie: '🚿', living: '🛋', birou: '💼', exterior: '🌿' };
+    const map = { bucatarie: '🍳', dormitor: '🛏', baie: '🚿', living: '🛋', birou: '💼', exterior: '🏢' };
     return map[cat] || '🪑';
   }
   function getCatLabel(cat) {
-    const map = { bucatarie: 'Bucătărie', dormitor: 'Dormitor', baie: 'Baie', living: 'Living', birou: 'Birou', exterior: 'Exterior' };
+    const map = { bucatarie: 'Bucătărie', dormitor: 'Dormitor', baie: 'Baie', living: 'Living', birou: 'Birou', exterior: 'Altele' };
     return map[cat] || cat;
   }
 

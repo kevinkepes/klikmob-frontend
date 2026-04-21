@@ -71,11 +71,11 @@ window.showView = showView;
 
 // --- GALLERY ---
 function getCatLabel(cat) {
-  const map = { bucatarie: 'Bucătărie', dormitor: 'Dormitor', baie: 'Baie', living: 'Living', birou: 'Birou', exterior: 'Exterior' };
+  const map = { bucatarie: 'Bucătărie', dormitor: 'Dormitor', baie: 'Baie', living: 'Living', birou: 'Birou', exterior: 'Altele' };
   return map[cat] || cat;
 }
 function getCatEmoji(cat) {
-  const map = { bucatarie: '🍳', dormitor: '🛏', baie: '🚿', living: '🛋', birou: '💼', exterior: '🌿' };
+  const map = { bucatarie: '🍳', dormitor: '🛏', baie: '🚿', living: '🛋', birou: '💼', exterior: '🏢' };
   return map[cat] || '🪑';
 }
 
@@ -190,8 +190,14 @@ async function openEditImagesModal(itemId) {
     // Clone imaginile ca sa putem modifica ordinea local (prima = coperta)
     editItemData = {
       id: item.id,
+      title: item.title,
+      category: item.category,
+      description: item.description || '',
       images: (item.images || []).map((img, idx) => ({ ...img, isCover: idx === 0 }))
     };
+    document.getElementById('editItemTitle').value = item.title || '';
+    document.getElementById('editItemCategory').value = item.category || '';
+    document.getElementById('editItemDesc').value = item.description || '';
     renderEditImagesGrid();
   } catch (e) {
     document.getElementById('editImagesGrid').innerHTML = '<p style="color:#e74c3c;padding:1rem;">Eroare la încărcare.</p>';
@@ -308,13 +314,35 @@ document.getElementById('saveEditImages')?.addEventListener('click', async () =>
   btn.textContent = 'Se salvează...'; btn.disabled = true;
 
   try {
+    // 0. Salveaza detalii lucrare (titlu, categorie, descriere)
+    const newTitle = document.getElementById('editItemTitle').value.trim();
+    const newCategory = document.getElementById('editItemCategory').value;
+    const newDesc = document.getElementById('editItemDesc').value.trim();
+    if (!newTitle) {
+      msg.textContent = '❌ Titlul nu poate fi gol.';
+      msg.style.color = 'red';
+      btn.textContent = 'Salvează modificările'; btn.disabled = false;
+      return;
+    }
+    const updateResult = await window.KlikAPI.adminUpdateItem(
+      editItemData.id,
+      { title: newTitle, category: newCategory, description: newDesc },
+      sessionUser, sessionPass
+    );
+    if (!updateResult || !updateResult.success) {
+      msg.textContent = '❌ Eroare la salvarea detaliilor.';
+      msg.style.color = 'red';
+      btn.textContent = 'Salvează modificările'; btn.disabled = false;
+      return;
+    }
+
     // 1. Daca avem poze noi de adaugat
     if (addMoreFiles.length > 0) {
       const addResult = await window.KlikAPI.adminAddImages(editItemData.id, addMoreFiles, sessionUser, sessionPass);
       if (!addResult || !addResult.success) {
         msg.textContent = '❌ Eroare la adăugarea pozelor noi.';
         msg.style.color = 'red';
-        btn.textContent = 'Salvează'; btn.disabled = false;
+        btn.textContent = 'Salvează modificările'; btn.disabled = false;
         return;
       }
     }
@@ -341,7 +369,7 @@ document.getElementById('saveEditImages')?.addEventListener('click', async () =>
     msg.textContent = '❌ Eroare la salvare.';
     msg.style.color = 'red';
   }
-  btn.textContent = 'Salvează'; btn.disabled = false;
+  btn.textContent = 'Salvează modificările'; btn.disabled = false;
 });
 
 document.getElementById('closeEditImages')?.addEventListener('click', () => {

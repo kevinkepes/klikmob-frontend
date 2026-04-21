@@ -230,7 +230,7 @@
           <button class="filter-btn" data-filter="baie">Baie</button>
           <button class="filter-btn" data-filter="living">Living</button>
           <button class="filter-btn" data-filter="birou">Birou</button>
-          <button class="filter-btn" data-filter="exterior">Exterior</button>
+          <button class="filter-btn" data-filter="exterior">Altele</button>
         </div>
         <div class="admin-grid" id="adminGrid"></div>
         <div class="admin-empty" id="adminEmpty" style="display:none;">
@@ -274,7 +274,7 @@
                   <option value="baie">🚿 Baie</option>
                   <option value="living">🛋 Living</option>
                   <option value="birou">💼 Birou</option>
-                  <option value="exterior">🌿 Exterior</option>
+                  <option value="exterior">🏢 Altele</option>
                 </select>
               </div>
             </div>
@@ -297,12 +297,42 @@
 
   <!-- EDIT IMAGES MODAL -->
   <div class="modal-overlay" id="editImagesModal">
-    <div class="modal-card" style="max-width:560px;text-align:left;padding:2rem;">
+    <div class="modal-card" style="max-width:560px;text-align:left;padding:2rem;overflow-y:auto;max-height:90vh;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
-        <h3 style="margin:0;font-size:1.2rem;">✏️ Editează pozele</h3>
+        <h3 style="margin:0;font-size:1.2rem;">✏️ Editează lucrarea</h3>
         <button id="closeEditImages"
           style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#aaa;line-height:1;">✕</button>
       </div>
+
+      <!-- Detalii lucrare -->
+      <div style="margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px solid #eee;">
+        <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.8rem;color:#555;">Detalii lucrare</h4>
+        <div style="display:flex;gap:0.7rem;margin-bottom:0.7rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;">
+            <label style="font-size:0.8rem;color:#777;display:block;margin-bottom:0.3rem;">Titlu *</label>
+            <input type="text" id="editItemTitle" placeholder="Titlu lucrare"
+              style="width:100%;padding:0.5rem 0.7rem;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;box-sizing:border-box;">
+          </div>
+          <div style="flex:0 0 160px;min-width:140px;">
+            <label style="font-size:0.8rem;color:#777;display:block;margin-bottom:0.3rem;">Categorie *</label>
+            <select id="editItemCategory"
+              style="width:100%;padding:0.5rem 0.7rem;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;box-sizing:border-box;">
+              <option value="bucatarie">🍳 Bucătărie</option>
+              <option value="dormitor">🛏 Dormitor</option>
+              <option value="baie">🚿 Baie</option>
+              <option value="living">🛋 Living</option>
+              <option value="birou">💼 Birou</option>
+              <option value="exterior">🏢 Altele</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.8rem;color:#777;display:block;margin-bottom:0.3rem;">Descriere (opțional)</label>
+          <textarea id="editItemDesc" rows="2" placeholder="Scurtă descriere..."
+            style="width:100%;padding:0.5rem 0.7rem;border:1px solid #ddd;border-radius:6px;font-size:0.9rem;resize:vertical;box-sizing:border-box;"></textarea>
+        </div>
+      </div>
+
       <p style="color:#888;font-size:0.85rem;margin-bottom:1rem;">
         Click pe <strong>⭐ Setează copertă</strong> pentru a schimba poza principală. Click pe <strong>✕</strong> roșu
         pentru a șterge o poză.
