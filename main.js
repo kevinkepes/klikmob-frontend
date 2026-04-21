@@ -183,30 +183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lightboxCaption = document.getElementById('lightboxCaption');
   const lightboxDots = document.getElementById('lightboxDots');
 
-  function updateWatermark() {
-    const imgW = lightboxImg.naturalWidth;
-    const imgH = lightboxImg.naturalHeight;
-    if (!imgW || !imgH) return;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const maxW = vw * 0.9;
-    const maxH = vh * 0.85;
-    const ratio = imgW / imgH;
-    let rendW, rendH;
-    if (ratio > maxW / maxH) { rendW = maxW; rendH = maxW / ratio; }
-    else { rendH = maxH; rendW = maxH * ratio; }
-    const imgLeft = (vw - rendW) / 2;
-    const imgTop = (vh - rendH) / 2;
-    const size = Math.min(rendW, rendH) * 0.15;
-    let wm = lightbox.querySelector('.lightbox-watermark');
-    if (!wm) {
-      wm = document.createElement('div');
-      wm.className = 'lightbox-watermark';
-      lightbox.appendChild(wm);
-    }
-    wm.style.cssText = `position:fixed;width:${size}px;height:${size}px;left:${imgLeft + rendW - size - 12}px;top:${imgTop + rendH - size - 12}px;background:url('logo.png') center/contain no-repeat;opacity:0.22;pointer-events:none;filter:brightness(0) invert(1);z-index:10001;`;
-  }
-
   // Preincarca imaginile adiacente (urmatoarea + precedenta) in background
   function preloadAdjacentImages() {
     const item = lightboxItems[lightboxIndex];
@@ -258,14 +234,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       newImg.onload = () => {
         lightboxImg.src = newImg.src;
         lightboxImg.style.display = 'block';
-        updateWatermark();
       };
       newImg.src = imgData.imageUrl;
       // Daca e deja in cache, onload nu se mai declanseaza — fallback
       if (newImg.complete && newImg.naturalWidth > 0) {
         lightboxImg.src = newImg.src;
         lightboxImg.style.display = 'block';
-        setTimeout(updateWatermark, 30);
       }
 
       if (lightboxDots) {
@@ -295,8 +269,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
-    const wm = lightbox.querySelector('.lightbox-watermark');
-    if (wm) wm.remove();
   }
 
   function lightboxPrevImage() {
@@ -321,7 +293,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     showLightboxImage();
   }
 
-  window.addEventListener('resize', () => { if (lightbox.classList.contains('open')) updateWatermark(); });
   document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
   document.getElementById('lightboxPrev').addEventListener('click', lightboxPrevImage);

@@ -97,13 +97,27 @@ async function checkBackendHealth() {
   return data !== null;
 }
 
+function makePlaceholderSvg(n) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="#111"/><text x="400" y="300" font-family="sans-serif" font-size="80" font-weight="bold" fill="#333" text-anchor="middle" dominant-baseline="middle">${n}</text></svg>`;
+  return 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
+function makeDemoImages(count) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    imageUrl: makePlaceholderSvg(i + 1),
+    sortOrder: i
+  }));
+}
+
 function getDemoItems(category) {
   const demo = [
-    { id: 1, title: 'Bucătărie modernă albă', category: 'bucatarie', description: 'Demo', imageUrl: null, images: [] },
-    { id: 2, title: 'Dormitor complet stejar', category: 'dormitor', description: 'Demo', imageUrl: null, images: [] },
-    { id: 3, title: 'Mobilă baie suspendată', category: 'baie', description: 'Demo', imageUrl: null, images: [] },
-    { id: 4, title: 'Bibliotecă living nuc', category: 'living', description: 'Demo', imageUrl: null, images: [] },
-    { id: 5, title: 'Birou home office', category: 'birou', description: 'Demo', imageUrl: null, images: [] },
+    { id: 1, title: 'Bucătărie modernă albă', category: 'bucatarie', description: 'Demo', images: makeDemoImages(4) },
+    { id: 2, title: 'Dormitor complet stejar', category: 'dormitor', description: 'Demo', images: makeDemoImages(3) },
+    { id: 3, title: 'Mobilă baie suspendată', category: 'baie', description: 'Demo', images: makeDemoImages(4) },
+    { id: 4, title: 'Bibliotecă living nuc', category: 'living', description: 'Demo', images: makeDemoImages(2) },
+    { id: 5, title: 'Birou home office', category: 'birou', description: 'Demo', images: makeDemoImages(3) },
+    { id: 6, title: 'Mobilă exterior terasă', category: 'exterior', description: 'Demo', images: makeDemoImages(2) },
   ];
   return category ? demo.filter(i => i.category === category) : demo;
 }

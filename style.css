@@ -863,11 +863,18 @@ a.contact-item:hover {
   display: flex;
 }
 
-.lightbox img {
+.lightbox-img-wrapper {
+  position: relative;
+  line-height: 0;
+  border-radius: 8px;
+}
+
+#lightboxImg {
   max-width: 90vw;
   max-height: 85vh;
   object-fit: contain;
   border-radius: 8px;
+  display: block;
 }
 
 .lightbox-close,
@@ -1220,12 +1227,21 @@ a.contact-item:hover {
 
 /* ---- LIGHTBOX WATERMARK ---- */
 .lightbox-watermark {
-  position: fixed;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 13%;
+  min-width: 28px;
+  max-width: 70px;
   pointer-events: none;
-  z-index: 10001;
   opacity: 0.22;
   filter: brightness(0) invert(1);
-  background: url('logo.png') center/contain no-repeat;
+}
+
+.lightbox-watermark img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* ---- HAMBURGER MENU FIX ---- */
