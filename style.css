@@ -901,16 +901,51 @@ a.contact-item:hover {
 
 .lightbox-prev {
   left: 1.5rem;
-  top: 50%;
+  top: calc(50% - 32px);
   transform: translateY(-50%);
   font-size: 2rem;
 }
 
 .lightbox-next {
   right: 1.5rem;
-  top: 50%;
+  top: calc(50% - 32px);
   transform: translateY(-50%);
   font-size: 2rem;
+}
+
+.lightbox-prev-project,
+.lightbox-next-project {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.lightbox-prev-project:hover,
+.lightbox-next-project:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.lightbox-prev-project {
+  left: 1.5rem;
+  top: calc(50% + 36px);
+  transform: translateY(-50%);
+}
+
+.lightbox-next-project {
+  right: 1.5rem;
+  top: calc(50% + 36px);
+  transform: translateY(-50%);
 }
 
 .lightbox-caption {

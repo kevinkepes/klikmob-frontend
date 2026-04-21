@@ -300,18 +300,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function lightboxPrevImage() {
-    const item = lightboxItems[lightboxIndex];
-    const hasMultiple = item && item.images && item.images.length > 1;
-    if (hasMultiple && lightboxImageIndex > 0) lightboxImageIndex--;
-    else { lightboxIndex = (lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length; lightboxImageIndex = 0; }
-    showLightboxImage();
+    if (lightboxImageIndex > 0) { lightboxImageIndex--; showLightboxImage(); }
   }
 
   function lightboxNextImage() {
     const item = lightboxItems[lightboxIndex];
     const hasMultiple = item && item.images && item.images.length > 1;
-    if (hasMultiple && lightboxImageIndex < item.images.length - 1) lightboxImageIndex++;
-    else { lightboxIndex = (lightboxIndex + 1) % lightboxItems.length; lightboxImageIndex = 0; }
+    if (hasMultiple && lightboxImageIndex < item.images.length - 1) { lightboxImageIndex++; showLightboxImage(); }
+  }
+
+  function lightboxPrevProject() {
+    lightboxIndex = (lightboxIndex - 1 + lightboxItems.length) % lightboxItems.length;
+    lightboxImageIndex = 0;
+    showLightboxImage();
+  }
+
+  function lightboxNextProject() {
+    lightboxIndex = (lightboxIndex + 1) % lightboxItems.length;
+    lightboxImageIndex = 0;
     showLightboxImage();
   }
 
@@ -320,6 +326,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
   document.getElementById('lightboxPrev').addEventListener('click', lightboxPrevImage);
   document.getElementById('lightboxNext').addEventListener('click', lightboxNextImage);
+  document.getElementById('lightboxPrevProject').addEventListener('click', lightboxPrevProject);
+  document.getElementById('lightboxNextProject').addEventListener('click', lightboxNextProject);
   document.addEventListener('keydown', e => {
     if (!lightbox.classList.contains('open')) return;
     if (e.key === 'Escape') closeLightbox();
