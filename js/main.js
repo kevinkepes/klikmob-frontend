@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (coverUrl) {
         div.innerHTML = `
           <img src="${coverUrl}" alt="${item.title}" loading="lazy">
-          <div class="watermark-logo"><img src="logo.png" alt="" aria-hidden="true"></div>
+          <div class="watermark-logo"><img src="assets/images/logo.png" alt="" aria-hidden="true"></div>
           ${item.images.length > 1 ? `<div class="gallery-img-count">📷 ${item.images.length}</div>` : ''}
           <div class="item-overlay">
             <h4>${item.title}</h4>

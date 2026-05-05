@@ -320,7 +320,7 @@ a {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: url('dark-brown-wood-pattern.jpg') center / cover no-repeat;
+  background: url('../assets/images/dark-brown-wood-pattern.jpg') center / cover no-repeat;
   background-color: #0a0400;
 }
 
@@ -540,12 +540,6 @@ a {
   border-radius: var(--radius);
   padding: 2rem;
   transition: var(--transition);
-}
-
-.serviciu-card:hover {
-  background: rgba(200, 150, 62, 0.1);
-  border-color: var(--gold);
-  transform: translateY(-4px);
 }
 
 .s-icon {
